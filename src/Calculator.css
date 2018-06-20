@@ -13,13 +13,13 @@
   box-sizing: border-box;
   padding: 0 20px;
   font-size: 30px;
+  background-color: #fff;
 }
 .calculator__screen .operation {
   margin-left: auto;
 }
 .calculator .wrap {
   border: 2px solid black;
-
 }
 .calculator__wrap {
   border: 1px solid black;

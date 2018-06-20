@@ -1,8 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
+import { connect } from "react-redux";
 
+import { Operations } from "./redux/ducks/calculator/types";
 import Button from "./Components/Button";
+import BackgroundNight from "./Components/Background";
+import { calculatorPressButtonAction } from "./redux/ducks/calculator/actions";
 
-import './Calculator.css';
+import "./Calculator.css";
 
 /**
  * Вынесли возможные состояния
@@ -12,31 +16,10 @@ import './Calculator.css';
  * в любой момент
  */
 
-const OPERATIONS = {
-  SUM: "+",
-  SUBTRACTION: "-",
-  MULTIPLICATION: "*",
-  DIVISION: "/",
-  NONE: ""
-}
-
-export default class Calculator extends Component {
-
-  /**
-   * При создании компонента через класс,
-   * у него появляется объект state и функция setState
-   * которые отвечают за состояние компонента
-   */
-
-  state = {
-    value1: "",
-    value2: "",
-    operation: OPERATIONS.NONE
-  }
-
+class Calculator extends Component {
   render() {
     // Используем spread operator чтобы извлечь переменные состояния
-    const { value1, value2, operation } = this.state;
+    const { value1, value2, operation } = this.props;
 
     return (
       <div className="calculator">
@@ -47,7 +30,7 @@ export default class Calculator extends Component {
                 Если операция не выбрана - выводим первое число,
                 а если выбрана, значит выводим второе
               */}
-              {operation === OPERATIONS.NONE ? value1 : value2}
+              {operation === Operations.NONE ? value1 || 0 : value2 || 0}
             </div>
             <div className="operation">{operation}</div>
           </div>
@@ -74,73 +57,22 @@ export default class Calculator extends Component {
     );
   }
 
-  handleClickButton = symbol => {
-    /**
-     * ВНИМАНИЕ! ГОВНОКОД!
-     */
-
-    const value = parseInt(symbol);
-
-    if (!isNaN(value)) { // Если символ - число, то...
-
-      if (this.state.operation === OPERATIONS.NONE) { // Если текущая операция не выбрана,
-        this.setState(state => ({ value1: state.value1 + symbol })); // приклеиваем символ в конец первого числа
-      } else { // Ну а если операция указана,
-        this.setState(state => ({ value2: state.value2 + symbol })); // значит приклеиваем ко второму
-      }
-
-    } else { // Ну а есои символ - не число,
-
-      switch (symbol) {
-        case "C": // Если С - сбросить все
-          return this.setState({
-            value1: "",
-            value2: "",
-            operation: OPERATIONS.NONE
-          });
-        case "+": // Пользователь нажал Сложить
-          return this.setState({ operation: OPERATIONS.SUM });
-        case "-": // Пользователь нажал Вычесть
-          return this.setState({ operation: OPERATIONS.SUBTRACTION });
-        case "/": // Пользователь нажал Поделить
-          return this.setState({ operation: OPERATIONS.DIVISION });
-        case "*": // Пользователь нажал Умножить
-          return this.setState({ operation: OPERATIONS.MULTIPLICATION });
-        case "=": // Пользователь нажал "=" (равно)
-          switch (this.state.operation) { // Смотрим какая сейчас операция
-            case OPERATIONS.SUM: // Если сумма - складываем
-              return this.setState(state => ({
-                operation: OPERATIONS.NONE, // И сбрасываем операцию
-                value1: parseInt(state.value1) + parseInt(state.value2),
-                value2: ""
-              }));
-            case OPERATIONS.SUBTRACTION: // Если вычитание - вычетаем
-              return this.setState(state => ({
-                operation: OPERATIONS.NONE, // И сбрасываем операцию
-                value1: parseInt(state.value1) - parseInt(state.value2),
-                value2: ""
-              }));
-            case OPERATIONS.MULTIPLICATION: // Если умножение - умножаем
-              return this.setState(state => ({
-                operation: OPERATIONS.NONE, // И сбрасываем операцию
-                value1: parseInt(state.value1) * parseInt(state.value2),
-                value2: ""
-              }));
-            case OPERATIONS.DIVISION: // Если деление - делим
-              return this.setState(state => ({
-                operation: OPERATIONS.NONE, // И сбрасываем операцию
-                value1: parseInt(state.value1) / parseInt(state.value2),
-                value2: ""
-              }));
-            // Реакт требует чтобы в свитчах был default
-            default:
-              break;
-          }
-        default: // Пользователь нажал на какую-то не обработанную кнопку
-          return this.setState({ operation: OPERATIONS.NONE });
-      }
-
-    }
-  }
+  handleClickButton = button => {
+    this.props.dispatchPressButtonAction(button);
+  };
 }
 
+const mapStateToProps = state => ({
+  ...state.calculator
+});
+
+const mapDispatchToProps = dispatch => ({
+  dispatchPressButtonAction(button) {
+    dispatch(calculatorPressButtonAction(button));
+  }
+});
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Calculator);
